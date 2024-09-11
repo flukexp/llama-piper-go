@@ -58,7 +58,7 @@ func main() {
 	}
 
 	// Construct the command with the current directory and the script path
-	command := fmt.Sprintf("go run %s/cmd/piper/piper.go", dir)
+	command := fmt.Sprintf("cd %s && go run ./cmd/piper/piper.go", dir)
 
 	fmt.Printf("%sExecuting command: %s%s\n", utils.BLUE, command, utils.NC)
 	openNewTerminal(command)

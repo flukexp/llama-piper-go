@@ -1,7 +1,8 @@
-package piper
+package main
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"runtime"
 
@@ -9,7 +10,48 @@ import (
 	"github.com/flukexp/llama-piper-go/internal/utils"
 )
 
-func piper() {
+func voice() {
+	// Download piper voices
+	downloader.CreateVoiceDestinationFolder()
+
+	if len(os.Args) > 1 {
+		langFilter := os.Args[1]
+		downloader.DownloadAndExtractVoiceFiles(langFilter)
+	} else {
+		downloader.DownloadAndExtractVoiceFiles("voice-en-us-amy-low")
+	}
+}
+
+// GetOSArchitecture determines the OS and architecture, and returns a formatted string.
+func GetOSArchitecture() (string, error) {
+	var osName, arch string
+
+	switch runtime.GOOS {
+	case "darwin":
+		osName = "macos"
+	case "windows":
+		osName = "windows"
+	case "linux":
+		osName = "linux"
+	default:
+		return "", fmt.Errorf("unsupported OS: %s", runtime.GOOS)
+	}
+
+	switch runtime.GOARCH {
+	case "amd64":
+		arch = "x64"
+	case "arm64":
+		arch = "aarch64"
+	case "arm":
+		arch = "armv7l"
+	default:
+		return "", fmt.Errorf("unsupported architecture: %s", runtime.GOARCH)
+	}
+
+	return fmt.Sprintf("%s_%s", osName, arch), nil
+}
+
+func main() {
 	utils.PrintHeader("Checking Dependencies")
 
 	dependencies := []string{"curl", "node", "npm"}
@@ -25,16 +67,22 @@ func piper() {
 	if downloader.IsPiperInstalled() {
 		fmt.Println(utils.GREEN + "Piper is already installed." + utils.NC)
 	} else {
-		architecture := runtime.GOARCH
+		architecture, err := GetOSArchitecture()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		}
+
 		// Determine the download URL based on the architecture and OS
 		utils.PrintHeader("Downloading Piper")
 
-		fileURL := fmt.Sprintf("https://github.com/rhasspy/piper/releases/download/latest/piper_%s.tar.gz", architecture)
-		downloader.DownloadPiperFile(fileURL, "piper.tar.gz")
+		fileName := fmt.Sprintf("piper_%s", architecture)
+		fileURL := "https://github.com/rhasspy/piper/releases/latest"
+		releaseFileName := downloader.DownloadPiperFile(fileURL, fileName)
 
 		utils.PrintHeader("Extracting Piper")
-		// Extract file (assuming tar.gz)
-		downloader.ExtractTarGz("piper.tar.gz", "./")
+		// Extract file (piper tar.gz)
+		downloader.ExtractTarGz(releaseFileName, "./")
 	}
 
 	// Download piper voices
@@ -43,12 +91,33 @@ func piper() {
 	// Installing npm dependencies and starting piper server
 
 	utils.PrintHeader("Installing npm dependencies and starting Piper server")
-	cmd := exec.Command("npm", "install", ".")
-	err := cmd.Run()
-	utils.PrintError(err.Error())
+	// Set working directory to "piper" for npm commands
+	workDir := "piper"
 
+	// Run 'npm install' in the "piper" directory
+	cmd := exec.Command("npm", "install", ".")
+	cmd.Dir = workDir
+	cmd.Stdout = os.Stdout // Direct stdout to terminal
+	cmd.Stderr = os.Stderr // Direct stderr to terminal
+	err := cmd.Run()
+	if err != nil {
+		utils.PrintError("Failed to run 'npm install': " + err.Error())
+		return
+	} else {
+		utils.PrintStatus("'npm install' completed successfully.")
+	}
+
+	// Run 'npm start' in the "piper" directory and display output in terminal
 	cmd = exec.Command("npm", "start")
+	cmd.Dir = workDir
+	cmd.Stdout = os.Stdout // Direct stdout to terminal
+	cmd.Stderr = os.Stderr // Direct stderr to terminal
 	err = cmd.Run()
-	utils.PrintError(err.Error())
+	if err != nil {
+		utils.PrintError("Failed to run 'npm start': " + err.Error())
+		return
+	} else {
+		utils.PrintStatus("'npm start' completed successfully.")
+	}
 
 }

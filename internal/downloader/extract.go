@@ -55,6 +55,9 @@ func ExtractTarGz(fileName string, destination string) error {
 			outFile.Close()
 		}
 	}
+	// Clean up
+	os.Remove(fileName)
+	utils.PrintStatus("Cleaned up " + fileName)
 
 	return nil
 }
