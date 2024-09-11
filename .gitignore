@@ -1,0 +1,28 @@
+# Node modules
+node_modules/
+
+# Logs
+log.txt
+
+# OS-specific files
+.DS_Store
+
+espeak-ng-data/
+
+# Models folder
+models/*.json
+models/*.onnx
+models/MODEL_CARD
+
+# Binaries
+*.dll
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+*.ort
+*.tar.gz
+espeak-ng
+piper
+piper_phonemize
