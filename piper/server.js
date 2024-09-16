@@ -14,7 +14,7 @@ function getPiperPath() {
     const platform = os.platform();
     const isWSL = fs.existsSync('/proc/version') && fs.readFileSync('/proc/version', 'utf8').includes('Microsoft');
     if (platform === 'win32' || (platform === 'linux' && isWSL)) {
-        return './piper.exe';
+        return 'piper.exe';
     } else {
         // For macOS or other platforms, set to default executable
         return './piper';

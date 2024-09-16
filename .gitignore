@@ -5,7 +5,7 @@ node_modules/
 log.txt
 
 # OS-specific files
-.DS_Store
+**/.DS_Store
 
 espeak-ng-data/
 
