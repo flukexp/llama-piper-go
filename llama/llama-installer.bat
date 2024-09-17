@@ -74,27 +74,11 @@ echo.
 echo llamacpp server is running on port 8080.
 pause
 
-:: Function to print section headers
-:print_header
-echo.
-echo ==================== %1 ====================
-echo.
-goto :eof
-
-:: Function to check for errors
-:check_error
-if %errorlevel% neq 0 (
-    echo.
-    echo Error occurred: %1 
-    exit /b 1
-)
-goto :eof
-
 :: Install missing package
 :install_package
 echo.
 echo Installing %1...
-choco install -y %1
+choco install -y %1 && refreshenv
 call :check_error "Failed to install %1"
 echo.
 echo %1 installed successfully
@@ -115,7 +99,7 @@ goto :eof
 
 :: Ensure Chocolatey is installed
 :ensure_choco
-call :print_header "Ensuring Chocolatey is Installed"
+call :print_header "Checking Dependencies"
 where choco >nul 2>&1
 if %errorlevel% neq 0 (
     echo.
@@ -145,6 +129,21 @@ if not exist "w64devkit" (
 ) else (
     echo.
     echo w64devkit is already present.
+)
+goto :eof
+
+:: Function to print section headers
+:print_header
+echo.
+echo %1
+goto :eof
+
+:: Function to check for errors
+:check_error
+if %errorlevel% neq 0 (
+    echo.
+    echo Error occurred: %1 
+    exit /b 1
 )
 goto :eof
 
@@ -188,7 +187,6 @@ if %retry_count% geq %max_retries% (
 
 echo.
 echo Attempt #%retry_count% to build...
-echo.
 
 :: Attempt to build
 %command%
@@ -201,8 +199,6 @@ if %errorlevel% equ 0 (
 :: If build failed, increment retry count and retry after delay
 echo.
 echo Build failed. Retrying again...
-echo.
 set /a "retry_count+=1"
 goto retry_loop
-
 

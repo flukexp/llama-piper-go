@@ -6,6 +6,7 @@ log.txt
 
 # OS-specific files
 **/.DS_Store
+.DS_Store
 
 espeak-ng-data/
 
@@ -20,9 +21,5 @@ models/MODEL_CARD
 *.so.*
 *.dylib
 *.dll
-*.exe
 *.ort
 *.tar.gz
-espeak-ng
-piper
-piper_phonemize
